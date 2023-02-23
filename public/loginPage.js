@@ -12,3 +12,14 @@ userForm.loginFormCallback = (data) => {
     };
     ApiConnector.login({ login: data.login, password: data.password }, clb);
 }
+
+userForm.registerFormCallback = (data) => {
+    let clb = (response) => {
+        if(response.success){
+            location.reload();
+        }else{
+            userForm.setRegisterErrorMessage(response.error);
+        }
+    };
+    ApiConnector.register({ login: data.login, password: data.password }, clb);
+}
