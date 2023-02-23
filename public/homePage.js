@@ -12,6 +12,7 @@ logoutBtn.action = () => {
     ApiConnector.logout(cb);
 }
 
+//инфо о пользователе
 ApiConnector.current((response) => {
     if(response.success){
         ProfileWidget.showProfile(response.data);
@@ -19,6 +20,52 @@ ApiConnector.current((response) => {
 
 });
 
+//получение текущих курсов валют
 const rateBoard = new RatesBoard();
+function fillRateBoard(){
+    ApiConnector.getStocks((response) => {
+        if(response.success){
+            rateBoard.clearTable();
+            rateBoard.fillTable(response.data);
+        }
+        }
+    );
+}
+fillRateBoard();
+setInterval(fillRateBoard, 60000);
 
-ApiConnector.getStocks((response) => console.log(response));
+//операции с деньгами
+const moneyManager = new MoneyManager();
+moneyManager.addMoneyCallback = (data) => {
+    ApiConnector.addMoney({ currency: data.currency, amount: data.amount }, (response) => {
+        if(response.success){
+            ProfileWidget.showProfile(response.data);
+            moneyManager.setMessage(response.success, "Баланс пополнен успешно");
+        }else{
+            moneyManager.setMessage(response.success, response.error);
+        }
+    });
+};
+
+moneyManager.conversionMoneyCallback = (data) => {
+    ApiConnector.convertMoney({ fromCurrency: data.fromCurrency, targetCurrency: data.targetCurrency, fromAmount: data.fromAmount }, (response) => {
+        if(response.success){
+            ProfileWidget.showProfile(response.data);
+            moneyManager.setMessage(response.success, "Конвертация прошла успешно");
+        }else{
+            moneyManager.setMessage(response.success, response.error);
+        }
+    });
+};
+
+moneyManager.sendMoneyCallback = (data) => {
+    console.log(data);
+    ApiConnector.transferMoney({ to: data.to, currency: data.currency, amount: data.amount }, (response) => {
+        if(response.success){
+            ProfileWidget.showProfile(response.data);
+            moneyManager.setMessage(response.success, "Перевод зачислен успешно");
+        }else{
+            moneyManager.setMessage(response.success, response.error);
+        }
+    });
+};
