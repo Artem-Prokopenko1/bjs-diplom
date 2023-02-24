@@ -22,6 +22,7 @@ ApiConnector.current((response) => {
 
 //получение текущих курсов валют
 const rateBoard = new RatesBoard();
+
 function fillRateBoard(){
     ApiConnector.getStocks((response) => {
         if(response.success){
@@ -36,6 +37,7 @@ setInterval(fillRateBoard, 60000);
 
 //операции с деньгами
 const moneyManager = new MoneyManager();
+
 moneyManager.addMoneyCallback = (data) => {
     ApiConnector.addMoney({ currency: data.currency, amount: data.amount }, (response) => {
         if(response.success){
@@ -68,4 +70,43 @@ moneyManager.sendMoneyCallback = (data) => {
             moneyManager.setMessage(response.success, response.error);
         }
     });
+};
+
+//Работа с избранным
+const favoritWidget = new FavoritesWidget();
+
+ApiConnector.getFavorites((response) => {
+    if(response.success){
+        favoritWidget.clearTable();
+        favoritWidget.fillTable(response.data);
+        moneyManager.updateUsersList(response.data);
+    }  
+});
+
+favoritWidget.addUserCallback = (data) => {
+    ApiConnector.addUserToFavorites({id: data.id, name: data.name}, (response) => {
+       
+        if(response.success){
+            favoritWidget.clearTable();
+            favoritWidget.fillTable(response.data);
+            moneyManager.updateUsersList(response.data);
+            favoritWidget.setMessage(response.success, "Пользователь добавлени в избранное");
+        }else{
+            favoritWidget.setMessage(response.success, response.error);
+        }  
+    });
+};
+
+favoritWidget.removeUserCallback = (id) => {
+    ApiConnector.removeUserFromFavorites(id, (response) => {
+        
+        if(response.success){
+            favoritWidget.clearTable();
+            favoritWidget.fillTable(response.data);
+            moneyManager.updateUsersList(response.data);
+            favoritWidget.setMessage(response.success, "Пользователь удален из избранного");
+        }else{
+            favoritWidget.setMessage(response.success, response.error);
+        }  
+    }) 
 };
