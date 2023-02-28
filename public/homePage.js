@@ -13,12 +13,12 @@ logoutBtn.action = () => {
 }
 
 //инфо о пользователе
-ApiConnector.current((response) => {
+let clb = (response) => {
     if(response.success){
         ProfileWidget.showProfile(response.data);
     }
-
-});
+}
+ApiConnector.current(clb);
 
 //получение текущих курсов валют
 const rateBoard = new RatesBoard();
